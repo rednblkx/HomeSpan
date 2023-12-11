@@ -48,10 +48,11 @@ namespace Service {
     OPT(Name);
     OPT(SerialNumber);
     OPT(HardwareRevision);
-    OPT(AccessoryFlags);    
+    OPT(AccessoryFlags);
+    OPT(HardwareFinish);
   END_SERV
 
-  CREATE_SERV(AirPurifier,BB)
+  CREATE_SERV(AirPurifier, BB)
     REQ(Active);
     REQ(CurrentAirPurifierState);
     REQ(TargetAirPurifierState);
@@ -253,7 +254,25 @@ namespace Service {
     OPT(Name);
   END_SERV
 
-  CREATE_SERV(Microphone,112)
+  CREATE_SERV(LockManagement, 44)
+    REQ(LockControlPoint);
+    REQ(Version);
+    OPT(AdministratorOnlyAccess);
+    OPT(AudioFeedback);
+    OPT(CurrentDoorState);
+    OPT(LockManagementAutoSecurityTimeout);
+    OPT(LockLastKnownAction);
+    OPT(Logs);
+    OPT(MotionDetected);
+  END_SERV
+
+  CREATE_SERV(NFCAccess, 266)
+    REQ(ConfigurationState);
+    REQ(NFCAccessControlPoint);
+    REQ(NFCAccessSupportedConfiguration);
+  END_SERV
+
+  CREATE_SERV(Microphone, 112)
     REQ(Mute);
     OPT(Name);
     OPT(Volume);
@@ -464,6 +483,16 @@ namespace Characteristic {
   CREATE_CHAR(uint8_t,LockCurrentState,0,0,3);
   CREATE_CHAR(uint8_t,LockPhysicalControls,0,0,1);
   CREATE_CHAR(uint8_t,LockTargetState,0,0,1);
+  CREATE_CHAR(const char *,LockControlPoint,"",0,1);
+  CREATE_CHAR(boolean,AdministratorOnlyAccess,false,0,1);
+  CREATE_CHAR(boolean,AudioFeedback,false,0,1);
+  CREATE_CHAR(uint32_t,LockManagementAutoSecurityTimeout,0,0,1);
+  CREATE_CHAR(uint8_t,LockLastKnownAction,0,0,8);
+  CREATE_CHAR(const char *,HardwareFinish,"AQQAAAAA",0,1);
+  CREATE_CHAR(const char *,Logs,"",0,1);
+  CREATE_CHAR(uint16_t,ConfigurationState,0,0,1);
+  CREATE_CHAR(const char *,NFCAccessControlPoint,"",0,1);
+  CREATE_CHAR(const char *,NFCAccessSupportedConfiguration,"AQEQAgEQ",0,1);
   CREATE_CHAR(const char *,Manufacturer,"HomeSpan",0,1);
   CREATE_CHAR(const char *,Model,"HomeSpan-ESP32",0,1);
   CREATE_CHAR(boolean,MotionDetected,false,0,1);
@@ -523,7 +552,7 @@ namespace Characteristic {
   CREATE_CHAR(uint8_t,TemperatureDisplayUnits,0,0,1);
   CREATE_CHAR(int,TargetVerticalTiltAngle,0,-90,90);
   CREATE_CHAR(uint8_t,ValveType,0,0,3);
-  CREATE_CHAR(const char *,Version,"1.0.0",0,1);
+  CREATE_CHAR(const char *,Version,"01.01.00",0,1);
   CREATE_CHAR(double,VOCDensity,0,0,1000);
   CREATE_CHAR(uint8_t,Volume,0,0,100);
   CREATE_CHAR(uint8_t,VolumeControlType,0,0,3);
@@ -548,6 +577,10 @@ namespace Characteristic {
 
 #define CUSTOM_CHAR_DATA(NAME,UUID,PERMISISONS) \
   HapChar _CUSTOM_##NAME {#UUID,#NAME,(PERMS)(PERMISISONS),DATA,true}; \
+  namespace Characteristic { struct NAME : SpanCharacteristic { NAME(const char * val="AA==", boolean nvsStore=false) : SpanCharacteristic {&_CUSTOM_##NAME,true} { init(val,nvsStore); } }; }
+
+#define CUSTOM_CHAR_TLV8(NAME,UUID,PERMISISONS) \
+  HapChar _CUSTOM_##NAME {#UUID,#NAME,(PERMS)(PERMISISONS),TLV8,true}; \
   namespace Characteristic { struct NAME : SpanCharacteristic { NAME(const char * val="AA==", boolean nvsStore=false) : SpanCharacteristic {&_CUSTOM_##NAME,true} { init(val,nvsStore); } }; }
 
 #else

@@ -886,7 +886,7 @@ void Span::processSerialCommand(const char *c){
                 LOG0("%s%s",(foundPerms++)?"+":"",pNames[i]);
             }           
             
-            if((*chr)->format!=FORMAT::STRING && (*chr)->format!=FORMAT::BOOL && (*chr)->format!=FORMAT::DATA){
+            if((*chr)->format!=FORMAT::STRING && (*chr)->format!=FORMAT::BOOL && (*chr)->format!=FORMAT::DATA && (*chr)->format!=FORMAT::TLV8){
               if((*chr)->validValues)
                 LOG0(", Valid Values=%s",(*chr)->validValues);
               else if((*chr)->uvGet<double>((*chr)->stepValue)>0)
@@ -1327,7 +1327,7 @@ int Span::countCharacteristics(char *buf){
 
 ///////////////////////////////
 
-int Span::updateCharacteristics(char *buf, SpanBuf *pObj){
+int Span::updateCharacteristics(char *buf, SpanBuf *pObj, char *callback, int *callbackLen){
 
   int nObj=0;
   char *p1;
@@ -1378,6 +1378,8 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj){
           LOG0("\n*** ERROR:  Timed Write Expired\n\n");
           twFail=true;
         }        
+      } else if(!strcmp(t2,"r") && (t3=strtok_r(t1,"}[]:, \"\t\n\r",&p2))){
+        okay|=4;
       } else {
         LOG0("\n*** ERROR:  Problems parsing JSON characteristics object - unexpected property \"%s\"\n\n",t2);
         return(0);
@@ -1416,7 +1418,7 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj){
   for(int i=0;i<nObj;i++){                                     // PASS 2: loop again over all objects       
     if(pObj[i].status==StatusCode::TBD){                       // if object status still TBD
 
-      StatusCode status=pObj[i].characteristic->service->update()?StatusCode::OK:StatusCode::Unable;                  // update service and save statusCode as OK or Unable depending on whether return is true or false
+      StatusCode status=pObj[i].characteristic->service->update(callback, callbackLen)?StatusCode::OK:StatusCode::Unable;                  // update service and save statusCode as OK or Unable depending on whether return is true or false
 
       for(int j=i;j<nObj;j++){                                                      // loop over this object plus any remaining objects to update values and save status for any other characteristics in this service
         
@@ -1426,10 +1428,14 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj){
           LOG1(pObj[j].characteristic->aid);
           LOG1(" iid=");  
           LOG1(pObj[j].characteristic->iid);
-          if(status==StatusCode::OK){                                                     // if status is okay
-            pObj[j].characteristic->uvSet(pObj[j].characteristic->value,pObj[j].characteristic->newValue);               // update characteristic value with new value
+          if(status==StatusCode::OK){               // if status is okay
+            if(pObj[j].characteristic->type != "264"){
+              pObj[j].characteristic->uvSet(pObj[j].characteristic->value,pObj[j].characteristic->newValue);               // update characteristic value with new value
+            } else if(pObj[j].characteristic->type == "264" && *callbackLen > 0){
+              pObj[j].characteristic->uvSet(pObj[j].characteristic->value,(const char *)callback);
+            }
             if(pObj[j].characteristic->nvsKey){                                                                                               // if storage key found
-              if(pObj[j].characteristic->format!=FORMAT::STRING && pObj[j].characteristic->format!=FORMAT::DATA)
+              if(pObj[j].characteristic->format!=FORMAT::STRING && pObj[j].characteristic->format!= FORMAT::DATA && pObj[j].characteristic->format!= FORMAT::TLV8)
                 nvs_set_blob(charNVS,pObj[j].characteristic->nvsKey,&(pObj[j].characteristic->value),sizeof(pObj[j].characteristic->value));  // store data
               else
                 nvs_set_str(charNVS,pObj[j].characteristic->nvsKey,pObj[j].characteristic->value.STRING);                                     // store data
@@ -1503,6 +1509,25 @@ int Span::sprintfAttributes(SpanBuf *pObj, int nObj, char *cBuf){
 
   for(int i=0;i<nObj;i++){
       nChars+=snprintf(cBuf?(cBuf+nChars):NULL,cBuf?128:0,"{\"aid\":%u,\"iid\":%d,\"status\":%d}",pObj[i].aid,pObj[i].iid,(int)pObj[i].status);
+      if(i+1<nObj)
+        nChars+=snprintf(cBuf?(cBuf+nChars):NULL,cBuf?64:0,",");
+  }
+
+  nChars+=snprintf(cBuf?(cBuf+nChars):NULL,cBuf?64:0,"]}");
+
+  return(nChars);    
+}
+
+///////////////////////////////
+
+int Span::sprintfValueAttributes(SpanBuf *pObj, char *value, int nObj, char *cBuf){
+
+  int nChars=0;
+
+  nChars+=snprintf(cBuf,cBuf?64:0,"{\"characteristics\":[");
+
+  for(int i=0;i<nObj;i++){
+      nChars+=snprintf(cBuf?(cBuf+nChars):NULL,cBuf?128:0,"{\"aid\":%u,\"iid\":%d,\"status\":%d, \"value\":\"%s\"}",pObj[i].aid,pObj[i].iid,(int)pObj[i].status, value);
       if(i+1<nObj)
         nChars+=snprintf(cBuf?(cBuf+nChars):NULL,cBuf?64:0,",");
   }
@@ -1820,7 +1845,7 @@ SpanCharacteristic::~SpanCharacteristic(){
   free(validValues);
   free(nvsKey);
 
-  if(format==FORMAT::STRING || format==FORMAT::DATA){
+  if(format==FORMAT::STRING || format==FORMAT::DATA || format==FORMAT::TLV8){
     free(value.STRING);
     free(newValue.STRING);
   }
@@ -1835,7 +1860,7 @@ int SpanCharacteristic::sprintfAttributes(char *cBuf, int flags){
 
   const char permCodes[][7]={"pr","pw","ev","aa","tw","hd","wr"};
 
-  const char formatCodes[][9]={"bool","uint8","uint16","uint32","uint64","int","float","string","data"};
+  const char formatCodes[][10]={"bool","uint8","uint16","uint32","uint64","int","float","string","data", "tlv8"};
 
   nBytes+=snprintf(cBuf,cBuf?64:0,"{\"iid\":%d",iid);
 
@@ -1994,6 +2019,11 @@ StatusCode SpanCharacteristic::loadUpdate(char *val, char *ev){
 
     case STRING:
       uvSet(newValue,(const char *)val);
+      break; 
+       
+    case TLV8:
+      Serial.println(val);
+      uvSet(newValue, (const char *)val);
       break;
 
     default:

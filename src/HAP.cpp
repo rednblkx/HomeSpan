@@ -1113,7 +1113,9 @@ int HAPClient::putCharacteristicsURL(char *json){
     return(0);
  
   SpanBuf pObj[n];                                        // reserve space for objects
-  if(!homeSpan.updateCharacteristics(json, pObj))         // perform update
+  char callback[64];
+  int callbackLen = 0;
+  if (!homeSpan.updateCharacteristics(json, pObj, callback, &callbackLen))        // perform update
     return(0);                                            // return if failed to update (error message will have been printed in update)
 
   int multiCast=0;                                        // check if all status is OK, or if multicast response is request
@@ -1121,7 +1123,32 @@ int HAPClient::putCharacteristicsURL(char *json){
     if(pObj[i].status!=StatusCode::OK)
       multiCast=1;    
 
-  if(!multiCast){                                         // JSON object has no content
+  if(callbackLen > 0){
+    callback[callbackLen] = '\0';
+    Serial.println();
+    for (int i = 0; i < callbackLen;++i){
+      Serial.print(callback[i]);
+    }
+    Serial.println();
+    pObj[n].val = callback;
+    int nBytes = homeSpan.sprintfValueAttributes(pObj, callback, n, NULL); // get JSON response - includes terminating null (will be recast to uint8_t* below)
+    char jsonBuf[nBytes+1];
+    homeSpan.sprintfValueAttributes(pObj,callback,n,jsonBuf);
+
+    int nChars=snprintf(NULL,0,"HTTP/1.1 207 Multi-Status\r\nContent-Type: application/hap+json\r\nContent-Length: %d\r\n\r\n",nBytes);      // create Body with Content Length = size of JSON Buf
+    char body[nChars+1];
+    sprintf(body,"HTTP/1.1 207 Multi-Status\r\nContent-Type: application/hap+json\r\nContent-Length: %d\r\n\r\n",nBytes);
+    
+    LOG2("\n>>>>>>>>>> ");
+    LOG2(client.remoteIP());
+    LOG2(" >>>>>>>>>>\n");    
+    LOG2(body);
+    LOG2(jsonBuf);
+    LOG2("\n");
+  
+    sendEncrypted(body,(uint8_t *)jsonBuf,nBytes);        // note recasting of jsonBuf into uint8_t*
+  }
+  else if(!multiCast){                                         // JSON object has no content
     
     char body[]="HTTP/1.1 204 No Content\r\n\r\n";
     
