@@ -1431,8 +1431,6 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj, char *callback, int *c
           if(status==StatusCode::OK){               // if status is okay
             if(pObj[j].characteristic->type != "264"){
               pObj[j].characteristic->uvSet(pObj[j].characteristic->value,pObj[j].characteristic->newValue);               // update characteristic value with new value
-            } else if(pObj[j].characteristic->type == "264" && *callbackLen > 0){
-              pObj[j].characteristic->uvSet(pObj[j].characteristic->value,(const char *)callback);
             }
             if(pObj[j].characteristic->nvsKey){                                                                                               // if storage key found
               if(pObj[j].characteristic->format!=FORMAT::STRING && pObj[j].characteristic->format!= FORMAT::DATA && pObj[j].characteristic->format!= FORMAT::TLV8)
