@@ -1327,7 +1327,7 @@ int Span::countCharacteristics(char *buf){
 
 ///////////////////////////////
 
-int Span::updateCharacteristics(char *buf, SpanBuf *pObj, char *callback, int *callbackLen){
+int Span::updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *callback, int *callbackLen){
 
   int nObj=0;
   char *p1;

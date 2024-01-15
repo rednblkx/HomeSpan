@@ -266,7 +266,7 @@ class Span{
   void prettyPrint(char *buf, int nsp=2, int minLogLevel=0);              // print arbitrary JSON from buf to serial monitor, formatted with indentions of 'nsp' spaces, subject to specified minimum log level
   SpanCharacteristic *find(uint32_t aid, int iid);                        // return Characteristic with matching aid and iid (else NULL if not found)
   int countCharacteristics(char *buf);                                    // return number of characteristic objects referenced in PUT /characteristics JSON request
-  int updateCharacteristics(char *buf, SpanBuf *pObj, char *callback, int *callbackLen);                    // parses PUT /characteristics JSON request 'buf into 'pObj' and updates referenced characteristics; returns 1 on success, 0 on fail
+  int updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *callback, int *callbackLen);                    // parses PUT /characteristics JSON request 'buf into 'pObj' and updates referenced characteristics; returns 1 on success, 0 on fail
   int sprintfAttributes(SpanBuf *pObj, int nObj, char *cBuf);             // prints SpanBuf object into buf, unless buf=NULL; return number of characters printed, excluding null terminator, even if buf=NULL
   int sprintfValueAttributes(SpanBuf *pObj, char *data, int nObj, char *cBuf);             
   int sprintfAttributes(char **ids, int numIDs, int flags, char *cBuf);   // prints accessory.characteristic ids into buf, unless buf=NULL; return number of characters printed, excluding null terminator, even if buf=NULL
@@ -417,7 +417,7 @@ class SpanService{
   SpanService *addLink(SpanService *svc);                                         // adds svc as a Linked Service and returns pointer to self
   vector<SpanService *> getLinks(){return(linkedServices);}                       // returns linkedServices vector for use as range in "for-each" loops
 
-  virtual boolean update(char *callback, int *callbackLen) {return(true);}                // placeholder for code that is called when a Service is updated via a Controller.  Must return true/false depending on success of update
+  virtual boolean update(std::vector<char> *callback, int *callbackLen) {return(true);}                // placeholder for code that is called when a Service is updated via a Controller.  Must return true/false depending on success of update
   virtual void loop(){}                                   // loops for each Service - called every cycle if over-ridden with user-defined code
   virtual void button(int pin, int pressType){}           // method called for a Service when a button attached to "pin" has a Single, Double, or Long Press, according to pressType
 };
