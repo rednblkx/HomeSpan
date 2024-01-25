@@ -1429,7 +1429,7 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *cal
           LOG1(" iid=");  
           LOG1(pObj[j].characteristic->iid);
           if(status==StatusCode::OK){               // if status is okay
-            if(pObj[j].characteristic->type != "264"){
+            if(strcmp(pObj[j].characteristic->type, "264")){
               pObj[j].characteristic->uvSet(pObj[j].characteristic->value,pObj[j].characteristic->newValue);               // update characteristic value with new value
             }
             if(pObj[j].characteristic->nvsKey){                                                                                               // if storage key found
