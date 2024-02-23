@@ -1618,6 +1618,9 @@ Controller *HAPClient::addController(uint8_t *id, uint8_t *ltpk, boolean admin){
     LOG2("\n*** Updated Controller: ");
     charPrintRow(id,36,2);
     LOG2(slot->admin?" (admin)\n\n":" (regular)\n\n");
+    if(homeSpan.pairCallback){ // if set, invoke user-defined Pairing Callback to indicate device has been removed
+      homeSpan.pairCallback(true);
+    }
     return(slot);    
   }
 
@@ -1629,6 +1632,9 @@ Controller *HAPClient::addController(uint8_t *id, uint8_t *ltpk, boolean admin){
     LOG2("\n*** Added Controller: ");
     charPrintRow(id,36,2);
     LOG2(slot->admin?" (admin)\n\n":" (regular)\n\n");
+    if(homeSpan.pairCallback){ // if set, invoke user-defined Pairing Callback to indicate device has been removed
+      homeSpan.pairCallback(true); 
+    }
     return(slot);       
   }
 
@@ -1675,7 +1681,7 @@ void HAPClient::removeController(uint8_t *id){
 
       STATUS_UPDATE(start(LED_PAIRING_NEEDED),HS_PAIRING_NEEDED)
 
-      if(homeSpan.pairCallback)                                    // if set, invoke user-defined Pairing Callback to indicate device has been paired
+      if(homeSpan.pairCallback)                                    // if set, invoke user-defined Pairing Callback to indicate device has been removed
         homeSpan.pairCallback(false);
     }
 
