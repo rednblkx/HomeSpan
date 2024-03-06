@@ -1426,9 +1426,7 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *cal
           LOG1(" iid=");  
           LOG1(pObj[j].characteristic->iid);
           if(status==StatusCode::OK){               // if status is okay
-            if(strcmp(pObj[j].characteristic->type, "264")){
-              pObj[j].characteristic->uvSet(pObj[j].characteristic->value,pObj[j].characteristic->newValue);               // update characteristic value with new value
-            }
+            pObj[j].characteristic->uvSet(pObj[j].characteristic->value,pObj[j].characteristic->newValue);               // update characteristic value with new value
             if(pObj[j].characteristic->nvsKey){                                                                                               // if storage key found
               if(pObj[j].characteristic->format!=FORMAT::STRING && pObj[j].characteristic->format!= FORMAT::DATA && pObj[j].characteristic->format!= FORMAT::TLV)
                 nvs_set_u64(charNVS,pObj[j].characteristic->nvsKey,pObj[j].characteristic->value.UINT64);  // store data as uint64_t regardless of actual type (it will be read correctly when access through uvGet())         
@@ -1991,9 +1989,6 @@ StatusCode SpanCharacteristic::loadUpdate(char *val, char *ev){
       break;
 
     case STRING:
-      uvSet(newValue,(const char *)val);
-      break; 
-       
     case TLV:
       uvSet(newValue, (const char *)val);
       break;
