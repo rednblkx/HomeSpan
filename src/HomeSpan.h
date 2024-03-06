@@ -277,7 +277,7 @@ class Span{
   
   SpanCharacteristic *find(uint32_t aid, int iid);                        // return Characteristic with matching aid and iid (else NULL if not found)
   int countCharacteristics(char *buf);                                    // return number of characteristic objects referenced in PUT /characteristics JSON request
-  int updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *callback, int *callbackLen);                    // parses PUT /characteristics JSON request 'buf into 'pObj' and updates referenced characteristics; returns 1 on success, 0 on fail
+  int updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *callback);                    // parses PUT /characteristics JSON request 'buf into 'pObj' and updates referenced characteristics; returns 1 on success, 0 on fail
   void printfAttributes(SpanBuf *pObj, int nObj);                         // writes SpanBuf objects to hapOut stream
   void printfValueAttributes(SpanBuf *pObj, int nObj, const char *value);                         // writes SpanBuf objects to hapOut stream
   boolean printfAttributes(char **ids, int numIDs, int flags);            // writes accessory requested characteristic ids to hapOut stream - returns true if all characteristics are found and readable, else returns false
@@ -450,7 +450,7 @@ class SpanService{
   SpanService *addLink(SpanService *svc);                                         // adds svc as a Linked Service and returns pointer to self
   vector<SpanService *, Mallocator<SpanService *>> getLinks(){return(linkedServices);}                       // returns linkedServices vector for use as range in "for-each" loops
 
-  virtual boolean update(std::vector<char> *callback, int *callbackLen) {return(true);}                // placeholder for code that is called when a Service is updated via a Controller.  Must return true/false depending on success of update
+  virtual boolean update(std::vector<char> *callback) {return(true);}                // placeholder for code that is called when a Service is updated via a Controller.  Must return true/false depending on success of update
   virtual void loop(){}                                   // loops for each Service - called every cycle if over-ridden with user-defined code
   virtual void button(int pin, int pressType){}           // method called for a Service when a button attached to "pin" has a Single, Double, or Long Press, according to pressType
 };

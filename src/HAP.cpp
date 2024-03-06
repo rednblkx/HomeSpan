@@ -996,8 +996,7 @@ int HAPClient::putCharacteristicsURL(char *json){
  
   SpanBuf pObj[n];                                        // reserve space for objects
   std::vector<char> callback;
-  int callbackLen = 0;
-  if (!homeSpan.updateCharacteristics(json, pObj, &callback, &callbackLen))        // perform update
+  if (!homeSpan.updateCharacteristics(json, pObj, &callback))        // perform update
     return(0);                                            // return if failed to update (error message will have been printed in update)
 
   int multiCast=0;                                        // check if all status is OK, or if multicast response is request

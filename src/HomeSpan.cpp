@@ -1321,7 +1321,7 @@ int Span::countCharacteristics(char *buf){
 
 ///////////////////////////////
 
-int Span::updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *callback, int *callbackLen){
+int Span::updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *callback){
 
   int nObj=0;
   char *p1;
@@ -1412,7 +1412,7 @@ int Span::updateCharacteristics(char *buf, SpanBuf *pObj, std::vector<char> *cal
   for(int i=0;i<nObj;i++){                                     // PASS 2: loop again over all objects       
     if(pObj[i].status==StatusCode::TBD){                       // if object status still TBD
 
-      StatusCode status=pObj[i].characteristic->service->update(callback, callbackLen)?StatusCode::OK:StatusCode::Unable;                  // update service and save statusCode as OK or Unable depending on whether return is true or false
+      StatusCode status=pObj[i].characteristic->service->update(callback)?StatusCode::OK:StatusCode::Unable;                  // update service and save statusCode as OK or Unable depending on whether return is true or false
 
       for(int j=i;j<nObj;j++){                                                      // loop over this object plus any remaining objects to update values and save status for any other characteristics in this service
         
@@ -1992,7 +1992,6 @@ StatusCode SpanCharacteristic::loadUpdate(char *val, char *ev){
       break; 
        
     case TLV:
-      Serial.println(val);
       uvSet(newValue, (const char *)val);
       break;
 
