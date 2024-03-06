@@ -367,6 +367,9 @@ void Span::commandMode(){
         done=true;
       }
     } // button press
+    else {
+      vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
   } // while
 
   STATUS_UPDATE(start(LED_ALERT),static_cast<HS_STATUS>(HS_ENTERING_CONFIG_MODE+mode+5))
