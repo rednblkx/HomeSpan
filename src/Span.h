@@ -60,6 +60,7 @@ namespace Service {
     OPT(Model);
     OPT(SerialNumber);
     OPT(HardwareRevision);
+    OPT(HardwareFinish);
     OPT_DEP(AccessoryFlags);
   END_SERV
 
@@ -340,6 +341,24 @@ namespace Service {
     OPT_DEP(Name);
   END_SERV
 
+ CREATE_SERV(LockManagement, 44)
+    REQ(LockControlPoint);
+    REQ(Version);
+    OPT(AdministratorOnlyAccess);
+    OPT(AudioFeedback);
+    OPT(CurrentDoorState);
+    OPT(LockManagementAutoSecurityTimeout);
+    OPT(LockLastKnownAction);
+    OPT(Logs);
+    OPT(MotionDetected);
+  END_SERV
+
+  CREATE_SERV(NFCAccess, 266)
+    REQ(ConfigurationState);
+    REQ(NFCAccessControlPoint);
+    REQ(NFCAccessSupportedConfiguration);
+  END_SERV
+
   CREATE_SERV(LockMechanism,45)   // Defines an electronic Lock.
     REQ(LockCurrentState);
     REQ(LockTargetState);
@@ -530,8 +549,18 @@ namespace Characteristic {
   CREATE_CHAR(UINT8_t,LeakDetected,0,0,1,NOT_DETECTED,DETECTED);  // indictates if a leak is detected
   CREATE_CHAR(UINT8_t,LockCurrentState,0,0,3,UNLOCKED,LOCKED,JAMMED,UNKNOWN);  // indicates state of a lock
   CREATE_CHAR(UINT8_t,LockPhysicalControls,0,0,1,CONTROL_LOCK_DISABLED,CONTROL_LOCK_ENABLED);  // indicates if local control lock is enabled
-  CREATE_CHAR(UINT8_t,LockTargetState,0,0,1,UNLOCK,LOCK);   // indicates desired state of lock
-  CREATE_CHAR(STRING_t,Manufacturer,"HomeSpan",NULL,NULL);  // any string - informational only
+  CREATE_CHAR(UINT8_t, LockTargetState, 0, 0, 1, UNLOCK, LOCK);   // indicates desired state of lock
+  CREATE_CHAR(UINT8_t,LockLastKnownAction, 0, 0, 8);
+  CREATE_CHAR(UINT32_t,LockManagementAutoSecurityTimeout, 0, 0, 1);
+  CREATE_CHAR(TLV_ENC_t,LockControlPoint,NULL_TLV,NULL_TLV,NULL_TLV);
+  CREATE_CHAR(BOOL_t,AdministratorOnlyAccess,false,0,1);
+  CREATE_CHAR(BOOL_t,AudioFeedback,false,0,1);
+  CREATE_CHAR(TLV_ENC_t,HardwareFinish, NULL_TLV,NULL_TLV,NULL_TLV);
+  CREATE_CHAR(TLV_ENC_t,Logs,NULL_TLV,NULL_TLV,NULL_TLV);
+  CREATE_CHAR(UINT16_t,ConfigurationState,0,0,1);
+  CREATE_CHAR(TLV_ENC_t,NFCAccessControlPoint,NULL_TLV,NULL_TLV,NULL_TLV);
+  CREATE_CHAR(TLV_ENC_t,NFCAccessSupportedConfiguration,NULL_TLV,NULL_TLV,NULL_TLV);
+  CREATE_CHAR(STRING_t, Manufacturer, "HomeSpan", NULL, NULL);  // any string - informational only
   CREATE_CHAR(STRING_t,Model,"HomeSpan-ESP32",NULL,NULL);  // any string - informational only
   CREATE_CHAR(BOOL_t,MotionDetected,0,0,1,NOT_DETECTED,DETECTED);  // indicates if motion is detected
   CREATE_CHAR(BOOL_t,Mute,0,0,1,OFF,ON); // not used
