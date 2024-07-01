@@ -35,6 +35,7 @@
 #include "HKDF.h"
 #include "SRP.h"
 #include <sodium/crypto_sign.h>
+#include <sodium/crypto_box.h>
 
 const TLV8_names HAP_Names[] = {
   {kTLVType_Separator,"SEPARATOR"},
