@@ -172,6 +172,7 @@ class Pixel : public Blinkable {
     int getPin(){return(rf->getPin());}                                                     // returns pixel pin if valid, else returns -1
     boolean isRGBW(){return(bytesPerPixel==4);}                                             // returns true if RGBW LED, else false if RGB LED
     void setTiming(float high0, float low0, float high1, float low1, uint32_t lowReset);    // changes default timings for bit pulse - note parameters are in MICROSECONDS
+    void setPixelType(pixelType_t pixelType){map=pixelType;if(map[3]){bytesPerPixel=4;}else{bytesPerPixel=3;}};
         
     operator bool(){         // override boolean operator to return true/false if creation succeeded/failed
       return(*rf);

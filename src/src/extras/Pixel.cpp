@@ -35,6 +35,7 @@
 //     Single-Wire RGB/RGBW NeoPixels     //
 ////////////////////////////////////////////
 
+
 Pixel::Pixel(int pin, pixelType_t pixelType){
     
   rf=new RFControl(pin,false,false);          // set clock to 1/80 usec, no default driver
