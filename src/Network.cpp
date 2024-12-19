@@ -108,9 +108,9 @@ void Network::apConfigure(){
   LOG0("*** Starting Access Point: %s / %s\n",apSSID,apPassword);
 
   STATUS_UPDATE(start(LED_AP_STARTED),HS_AP_STARTED)
-        
+
   LOG0("\nScanning for Networks...\n\n");
-  
+
   scan();                   // scan for networks    
 
   for(int i=0;i<numSSID;i++)
@@ -118,7 +118,7 @@ void Network::apConfigure(){
 
   WiFiServer apServer(80);
   client=0;
-    
+
   const byte DNS_PORT = 53;
   DNSServer dnsServer;
   IPAddress apIP(192, 168, 4, 1);
@@ -171,7 +171,7 @@ void Network::apConfigure(){
       LOG2("\n");
       delay(50);                                        // pause to allow data buffer to begin to populate
     }
-    
+
     if(client && client.available()){                   // if connection exists and data is available
 
       LOG2("<<<<<<<<< ");
@@ -187,19 +187,19 @@ void Network::apConfigure(){
       } 
 
       TempBuffer<uint8_t> httpBuf(messageSize+1);      // leave room for null character added below
-    
+
       int nBytes=client.read(httpBuf,messageSize);       // read all available bytes up to maximum allowed+1
-      
+
       if(nBytes!=messageSize || client.available()!=0){
         badRequestError();
         LOG0("\n*** ERROR:  HTTP message not read correctly.  Expected %d bytes, read %d bytes, %d bytes remaining\n\n",messageSize,nBytes,client.available());
         continue;
       }
-    
+
       httpBuf[nBytes]='\0';                       // add null character to enable string functions    
       char *body=(char *)httpBuf.get();                 // char pointer to start of HTTP Body
       char *p;                                          // char pointer used for searches
-      
+
       if(!(p=strstr((char *)httpBuf.get(),"\r\n\r\n"))){
         badRequestError();
         LOG0("\n*** ERROR:  Malformed HTTP request (can't find blank line indicating end of BODY)\n\n");
@@ -224,10 +224,11 @@ void Network::apConfigure(){
       content[cLen]='\0';                               // add a trailing null on end of any contents, which should always be text-based
 
       processRequest(body, (char *)content);            // process request
-      
+
       LOG2("\n");
 
     } // process Client
+    delay(50);
 
   } // while 1
 
